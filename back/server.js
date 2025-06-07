@@ -10,7 +10,11 @@ import knexConfig from './knexfile.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
+const express = require('express');
+const bodyParser = require('body-parser');
+const xrpl = require('xrpl');
+const crypto = require('crypto');
+const cc = require('five-bells-condition');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -125,18 +129,27 @@ app.post("/api/escrows", async (req, res) => {
       rippleEpoch;
 
     // Create XRPL EscrowCreate transaction
+    const currentLedger = await client.getLedgerIndex()
+    const finishAfter = new Date();
+    finishAfter.setMinutes(finishAfter.getMinutes() + 5);
+    const finishAfterRippleTime = Math.floor(finishAfter.getTime() / 1000) + xrpl.EPOCH_OFFSET;
     const escrowCreate = {
       TransactionType: "EscrowCreate",
       Account: process.env.NGO_WALLET_ADDRESS,
       Destination: farmer.xrp_address,
-      Amount: xrpl.xrpToDrops(amount.toString()),
-      CancelAfter: deadlineTimestamp,
+      Amount: xrpl.xrpToDrops("1000000"),
+      // CancelAfter: deadlineTimestamp,
       Condition: condition,
-      FinishAfter: deadlineTimestamp - (7 * 24 * 60 * 60), // Allow 7 days for verification
+      FinishAfter: finishAfterRippleTime, // Allow 7 days for verification
+      // Flags: 2147483648,
+      // LastLedgerSequence: currentLedger + 40,
+      
     };
 
     // Submit and wait for validation
     const prepared = await client.autofill(escrowCreate);
+    console.log('Prepared LastLedgerSequence:', prepared.LastLedgerSequence);
+    console.log('Current ledger index:', await client.getLedgerIndex());
     const signed = xrpl.Wallet.fromSecret(process.env.NGO_WALLET_SECRET).sign(prepared);
     const result = await client.submitAndWait(signed.tx_blob);
 

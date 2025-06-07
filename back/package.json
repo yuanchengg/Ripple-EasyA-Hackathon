@@ -19,7 +19,7 @@
     "express": "^4.18.2",
     "knex": "^3.0.1",
     "sqlite3": "^5.1.7",
-    "xrpl": "^2.7.0"
+    "xrpl": "^4.2.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
