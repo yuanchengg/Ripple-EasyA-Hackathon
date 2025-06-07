@@ -1,21 +1,50 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { Home as HomeIcon, AccountBalance as AccountBalanceIcon, VerifiedUser as VerifiedUserIcon, Person as PersonIcon } from '@mui/icons-material';
 
-function Navbar() {
+export default function Navbar() {
   return (
-    <nav className="navbar">
-      <div className="nav-brand">
-        <Link to="/">Climate Aid Escrow</Link>
-      </div>
-      <div className="nav-links">
-        <Link to="/farmers">Farmers</Link>
-        <Link to="/farmers/new" className="nav-button">+ New Farmer</Link>
-        <Link to="/escrows">Escrows</Link>
-        <Link to="/escrows/new" className="nav-button">+ New Escrow</Link>
-        <Link to="/verifications">Verifications</Link>
-      </div>
-    </nav>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          Climate Aid Escrow
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/"
+            startIcon={<HomeIcon />}
+          >
+            Home
+          </Button>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/farmers"
+            startIcon={<PersonIcon />}
+          >
+            Farmers
+          </Button>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/escrows"
+            startIcon={<AccountBalanceIcon />}
+          >
+            Escrows
+          </Button>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/verifications"
+            startIcon={<VerifiedUserIcon />}
+          >
+            Verifications
+          </Button>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
-}
-
-export default Navbar; 
+} 

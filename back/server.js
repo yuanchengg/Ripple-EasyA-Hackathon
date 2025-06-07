@@ -136,19 +136,30 @@ app.post("/api/escrows", async (req, res) => {
     // Set FinishAfter to 5 minutes from now
     const finishAfter = new Date();
     finishAfter.setMinutes(finishAfter.getMinutes() + 5);
-    const finishAfterRippleTime = Math.floor(finishAfter.getTime() / 1000) + xrpl.EPOCH_OFFSET;
+    const RIPPLE_EPOCH_OFFSET = 946684800;
+    const finishAfterRippleTime = Math.floor(finishAfter.getTime() / 1000) - RIPPLE_EPOCH_OFFSET;
     const escrowCreate = {
       TransactionType: "EscrowCreate",
       Account: process.env.NGO_WALLET_ADDRESS,
       Destination: farmer.xrp_address,
-      Amount: xrpl.xrpToDrops("1000000"),
+      Amount: xrpl.xrpToDrops(amount.toString()),
       CancelAfter: deadlineTimestamp,
       Condition: es_condition,
-      FinishAfter: deadlineTimestamp, // Allow 7 days for verification
+      FinishAfter: finishAfterRippleTime, // Allow 7 days for verification
       // Flags: 2147483648,
       // LastLedgerSequence: currentLedger + 40,
       
     };
+
+    const ledger = await client.request({
+      command: "ledger",
+      ledger_index: "validated", // ensures we get a valid, complete ledger
+    });
+    const currentRippleTime = ledger.result.ledger.close_time;
+    console.log("XRPL current time:", currentRippleTime);
+    console.log("Your FinishAfterRippleTime:", finishAfterRippleTime);
+    console.log("Delta (seconds):", finishAfterRippleTime - currentRippleTime);
+    console.log("escrowCreate:", escrowCreate);
 
     // Submit and wait for validation
     const prepared = await client.autofill(escrowCreate);
@@ -158,6 +169,7 @@ app.post("/api/escrows", async (req, res) => {
     const result = await client.submitAndWait(signed.tx_blob);
 
     if (result.result.meta.TransactionResult !== "tesSUCCESS") {
+      console.error("XRPL EscrowCreate failed:", result.result.meta.TransactionResult, result.result);
       throw new Error("Failed to create escrow on XRPL");
     }
 
@@ -167,7 +179,7 @@ app.post("/api/escrows", async (req, res) => {
       amount: parseFloat(amount),
       practice_type,
       status: "pending",
-      condition_hash: condition,
+      condition_hash: es_condition,
       fulfillment_data: fulfillment,
       xrpl_sequence: result.result.tx_json.Sequence,
       deadline: new Date(Date.now() + deadline_days * 24 * 60 * 60 * 1000),
