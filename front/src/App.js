@@ -1,86 +1,60 @@
-// front/src/App.js
-import React, { useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { AppBar, Toolbar, Typography, Container, Tabs, Tab, Box } from '@mui/material';
-import Dashboard from './components/Dashboard';
-import FarmerManagement from './components/FarmerManagement';
-import EscrowManagement from './components/EscrowManagement';
-import VerificationLogs from './components/VerificationLogs';
-import XRPLConnector from './components/XRPLConnector';
+import React, { useState } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import {
+  CssBaseline,
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Tabs,
+  Tab,
+  Box,
+} from "@mui/material";
+import Dashboard from "./components/Dashboard";
+import FarmerManagement from "./components/FarmerManagement";
+import EscrowManagement from "./components/EscrowManagement";
+import VerificationLogs from "./components/VerificationLogs";
+import XRPLConnector from "./components/XRPLConnector";
 
 const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#2e7d32', // Green theme for sustainability
-    },
-    secondary: {
-      main: '#1976d2',
-    },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
+  palette: { primary: { main: "#2e7d32" }, secondary: { main: "#1976d2" } },
 });
 
-function TabPanel({ children, value, index, ...other }) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
+function TabPanel({ children, value, index }) {
+  return value === index ? <Box p={3}>{children}</Box> : null;
 }
 
-function App() {
-  const [tabValue, setTabValue] = useState(0);
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
+export default function App() {
+  const [tab, setTab] = useState(0);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            🌱 Climate Aid Escrow System
-          </Typography>
+          <Typography sx={{ flexGrow: 1 }}>🌱 Climate Aid Escrow</Typography>
           <XRPLConnector />
         </Toolbar>
       </AppBar>
-      
-      <Container maxWidth="xl" sx={{ mt: 2 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="system tabs">
-            <Tab label="Dashboard" />
-            <Tab label="Farmers" />
-            <Tab label="Escrows" />
-            <Tab label="Verification Logs" />
-          </Tabs>
-        </Box>
-        
-        <TabPanel value={tabValue} index={0}>
+      <Container maxWidth="xl">
+        <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+          <Tab label="Dashboard" />
+          <Tab label="Farmers" />
+          <Tab label="Escrows" />
+          <Tab label="Logs" />
+        </Tabs>
+        <TabPanel value={tab} index={0}>
           <Dashboard />
         </TabPanel>
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value={tab} index={1}>
           <FarmerManagement />
         </TabPanel>
-        <TabPanel value={tabValue} index={2}>
+        <TabPanel value={tab} index={2}>
           <EscrowManagement />
         </TabPanel>
-        <TabPanel value={tabValue} index={3}>
+        <TabPanel value={tab} index={3}>
           <VerificationLogs />
         </TabPanel>
       </Container>
     </ThemeProvider>
   );
 }
-
-export default App;

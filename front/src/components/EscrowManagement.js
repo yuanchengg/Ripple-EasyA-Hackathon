@@ -24,16 +24,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Card,
-  CardContent,
 } from "@mui/material";
-import {
-  Add,
-  Lock,
-  CheckCircle,
-  Cancel,
-  Visibility,
-} from "@mui/icons-material";
+import { Add, Lock, CheckCircle, Cancel } from "@mui/icons-material";
 import { api } from "../services/api";
 
 const PRACTICE_TYPES = [
@@ -44,22 +36,7 @@ const PRACTICE_TYPES = [
   { value: "organic_farming", label: "Organic Farming" },
 ];
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case "pending":
-      return "warning";
-    case "verified":
-      return "success";
-    case "released":
-      return "primary";
-    case "expired":
-      return "error";
-    default:
-      return "default";
-  }
-};
-
-function EscrowManagement() {
+export default function EscrowManagement() {
   const [escrows, setEscrows] = useState([]);
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,16 +63,15 @@ function EscrowManagement() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [escrowsResponse, farmersResponse] = await Promise.all([
+      const [eRes, fRes] = await Promise.all([
         api.get("/escrows"),
         api.get("/farmers"),
       ]);
-      setEscrows(escrowsResponse.data);
-      setFarmers(farmersResponse.data);
+      setEscrows(eRes.data);
+      setFarmers(fRes.data);
       setError(null);
     } catch (err) {
       setError("Failed to fetch data");
-      console.error("Fetch data error:", err);
     } finally {
       setLoading(false);
     }
@@ -103,27 +79,20 @@ function EscrowManagement() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleVerifyInputChange = (e) => {
     const { name, value } = e.target;
-    setVerifyData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setVerifyData((p) => ({ ...p, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
-      const response = await api.post("/escrows", formData);
-      setEscrows((prev) => [...prev, response.data]);
+      await api.post("/escrows", formData);
+      fetchData();
       setDialogOpen(false);
       setFormData({
         farmer_id: "",
@@ -131,10 +100,8 @@ function EscrowManagement() {
         practice_type: "",
         deadline_days: "30",
       });
-      setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to create escrow");
-      console.error("Submit escrow error:", err);
     } finally {
       setSubmitting(false);
     }
@@ -143,60 +110,39 @@ function EscrowManagement() {
   const handleVerify = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
-      const response = await api.post(
-        `/escrows/${selectedEscrow.id}/verify`,
-        verifyData
-      );
-      setEscrows((prev) =>
-        prev.map((escrow) =>
-          escrow.id === selectedEscrow.id
-            ? {
-                ...escrow,
-                status: "verified",
-                verified_at: new Date().toISOString(),
-              }
-            : escrow
-        )
-      );
+      await api.post(`/escrows/${selectedEscrow.id}/verify`, verifyData);
+      fetchData();
       setVerifyDialogOpen(false);
-      setVerifyData({
-        verification_data: "",
-        satellite_image_url: "",
-      });
+      setVerifyData({ verification_data: "", satellite_image_url: "" });
       setSelectedEscrow(null);
-      setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to verify practice");
-      console.error("Verify practice error:", err);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const openVerifyDialog = (escrow) => {
-    setSelectedEscrow(escrow);
-    setVerifyDialogOpen(true);
+  const handleCancel = async (escrow) => {
+    setSubmitting(true);
+    try {
+      await api.post(`/escrows/${escrow.id}/cancel`);
+      fetchData();
+    } catch {
+      setError("Cancel failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
-  };
+  const formatDate = (d) => new Date(d).toLocaleDateString();
 
-  const getPracticeLabel = (practiceType) => {
-    const practice = PRACTICE_TYPES.find((p) => p.value === practiceType);
-    return practice ? practice.label : practiceType;
-  };
+  const getPracticeLabel = (type) =>
+    PRACTICE_TYPES.find((p) => p.value === type)?.label || type;
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight={300}
-      >
+      <Box display="flex" justifyContent="center" p={4}>
         <CircularProgress />
       </Box>
     );
@@ -204,15 +150,8 @@ function EscrowManagement() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" gutterBottom>
-          🔒 Escrow Management
-        </Typography>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Typography variant="h4">🔒 Escrow Management</Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
@@ -221,64 +160,7 @@ function EscrowManagement() {
           Create New Escrow
         </Button>
       </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Total Escrows
-              </Typography>
-              <Typography variant="h5">{escrows.length}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Pending Verification
-              </Typography>
-              <Typography variant="h5" color="warning.main">
-                {escrows.filter((e) => e.status === "pending").length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Verified
-              </Typography>
-              <Typography variant="h5" color="success.main">
-                {escrows.filter((e) => e.status === "verified").length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Total XRP Locked
-              </Typography>
-              <Typography variant="h5" color="primary">
-                {escrows
-                  .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
-                  .toFixed(2)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {error && <Alert severity="error">{error}</Alert>}
 
       <TableContainer component={Paper}>
         <Table>
@@ -294,50 +176,65 @@ function EscrowManagement() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {escrows.map((escrow) => (
-              <TableRow key={escrow.id}>
-                <TableCell>{escrow.id}</TableCell>
-                <TableCell>{escrow.farmer_name}</TableCell>
+            {escrows.map((esc) => (
+              <TableRow key={esc.id}>
+                <TableCell>{esc.id}</TableCell>
+                <TableCell>{esc.farmer_name}</TableCell>
                 <TableCell>
                   <Box display="flex" alignItems="center">
-                    <Lock sx={{ mr: 1, color: "action.active" }} />
-                    {parseFloat(escrow.amount).toFixed(2)}
+                    <Lock sx={{ mr: 0.5 }} />
+                    {parseFloat(esc.amount).toFixed(3)}
                   </Box>
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={getPracticeLabel(escrow.practice_type)}
-                    variant="outlined"
+                    label={getPracticeLabel(esc.practice_type)}
                     size="small"
                   />
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={escrow.status.toUpperCase()}
-                    color={getStatusColor(escrow.status)}
+                    label={esc.status.toUpperCase()}
+                    color={
+                      esc.status === "pending"
+                        ? "warning"
+                        : esc.status === "released"
+                        ? "primary"
+                        : esc.status === "verified"
+                        ? "success"
+                        : "error"
+                    }
                     size="small"
                   />
                 </TableCell>
-                <TableCell>{formatDate(escrow.deadline)}</TableCell>
+                <TableCell>{formatDate(esc.deadline)}</TableCell>
                 <TableCell>
-                  {escrow.status === "pending" && (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<CheckCircle />}
-                      onClick={() => openVerifyDialog(escrow)}
-                    >
-                      Verify
-                    </Button>
-                  )}
-                  {escrow.status === "verified" && (
-                    <Chip
-                      icon={<CheckCircle />}
-                      label="Completed"
-                      color="success"
-                      size="small"
-                    />
-                  )}
+                  {esc.status === "pending" &&
+                    new Date(esc.deadline) <= new Date() && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<Cancel />}
+                        onClick={() => handleCancel(esc)}
+                        disabled={submitting}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  {esc.status === "pending" &&
+                    new Date(esc.deadline) > new Date() && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<CheckCircle />}
+                        onClick={() => {
+                          setSelectedEscrow(esc);
+                          setVerifyDialogOpen(true);
+                        }}
+                      >
+                        Verify
+                      </Button>
+                    )}
                 </TableCell>
               </TableRow>
             ))}
@@ -358,16 +255,15 @@ function EscrowManagement() {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <FormControl fullWidth required>
-                  <InputLabel>Select Farmer</InputLabel>
+                  <InputLabel>Farmer</InputLabel>
                   <Select
                     name="farmer_id"
                     value={formData.farmer_id}
                     onChange={handleInputChange}
-                    label="Select Farmer"
                   >
-                    {farmers.map((farmer) => (
-                      <MenuItem key={farmer.id} value={farmer.id}>
-                        {farmer.name} ({farmer.location})
+                    {farmers.map((f) => (
+                      <MenuItem key={f.id} value={f.id}>
+                        {f.name} ({f.location})
                       </MenuItem>
                     ))}
                   </Select>
@@ -379,10 +275,10 @@ function EscrowManagement() {
                   label="Amount (XRP)"
                   name="amount"
                   type="number"
+                  inputProps={{ step: 0.001, min: 0 }}
                   value={formData.amount}
                   onChange={handleInputChange}
                   required
-                  inputProps={{ step: 0.001, min: 0 }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -391,10 +287,10 @@ function EscrowManagement() {
                   label="Deadline (days)"
                   name="deadline_days"
                   type="number"
+                  inputProps={{ min: 1, max: 365 }}
                   value={formData.deadline_days}
                   onChange={handleInputChange}
                   required
-                  inputProps={{ min: 1, max: 365 }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -404,11 +300,10 @@ function EscrowManagement() {
                     name="practice_type"
                     value={formData.practice_type}
                     onChange={handleInputChange}
-                    label="Practice Type"
                   >
-                    {PRACTICE_TYPES.map((practice) => (
-                      <MenuItem key={practice.value} value={practice.value}>
-                        {practice.label}
+                    {PRACTICE_TYPES.map((p) => (
+                      <MenuItem key={p.value} value={p.value}>
+                        {p.label}
                       </MenuItem>
                     ))}
                   </Select>
@@ -419,7 +314,7 @@ function EscrowManagement() {
           <DialogActions>
             <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={submitting}>
-              {submitting ? <CircularProgress size={20} /> : "Create Escrow"}
+              Create
             </Button>
           </DialogActions>
         </form>
@@ -432,7 +327,7 @@ function EscrowManagement() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Verify Climate Practice</DialogTitle>
+        <DialogTitle>Verify Practice</DialogTitle>
         <form onSubmit={handleVerify}>
           <DialogContent>
             <Grid container spacing={2}>
@@ -446,7 +341,6 @@ function EscrowManagement() {
                   value={verifyData.verification_data}
                   onChange={handleVerifyInputChange}
                   required
-                  helperText="Describe the verified climate-smart practice implementation"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -456,20 +350,14 @@ function EscrowManagement() {
                   name="satellite_image_url"
                   value={verifyData.satellite_image_url}
                   onChange={handleVerifyInputChange}
-                  helperText="URL to satellite imagery or verification photo"
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setVerifyDialogOpen(false)}>Cancel</Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={submitting}
-              color="success"
-            >
-              {submitting ? <CircularProgress size={20} /> : "Verify Practice"}
+            <Button type="submit" variant="contained" disabled={submitting}>
+              Release
             </Button>
           </DialogActions>
         </form>
@@ -477,5 +365,3 @@ function EscrowManagement() {
     </Box>
   );
 }
-
-export default EscrowManagement;
