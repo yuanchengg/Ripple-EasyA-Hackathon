@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../services/api";
 
-function FarmerList() {
+export default function FarmerList() {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,12 +10,12 @@ function FarmerList() {
   useEffect(() => {
     const fetchFarmers = async () => {
       try {
-        const response = await api.get('/farmers');
+        const response = await api.get("/farmers");
         setFarmers(response.data);
         setError(null);
-      } catch (error) {
-        setError('Failed to fetch farmers');
-        console.error('Error fetching farmers:', error);
+      } catch (err) {
+        console.error("Error fetching farmers:", err);
+        setError("Failed to fetch farmers");
       } finally {
         setLoading(false);
       }
@@ -23,14 +24,14 @@ function FarmerList() {
     fetchFarmers();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading farmers…</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div>
+    <div className="farmer-list-page">
       <h1>Farmers</h1>
       <div className="card">
-        <table>
+        <table className="farmer-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -41,9 +42,12 @@ function FarmerList() {
             </tr>
           </thead>
           <tbody>
-            {farmers.map(farmer => (
+            {farmers.map((farmer) => (
               <tr key={farmer.id}>
-                <td>{farmer.name}</td>
+                <td>
+                  {/* Clicking a name takes you to /farmers/:id */}
+                  <Link to={`/farmers/${farmer.id}`}>{farmer.name}</Link>
+                </td>
                 <td>{farmer.location}</td>
                 <td>{farmer.farm_size}</td>
                 <td>{farmer.primary_crop}</td>
@@ -56,5 +60,3 @@ function FarmerList() {
     </div>
   );
 }
-
-export default FarmerList; 
