@@ -8,13 +8,9 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import knexConfig from './knexfile.js';
 import dotenv from 'dotenv';
+import cc from 'five-bells-condition';
 
 dotenv.config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const xrpl = require('xrpl');
-const crypto = require('crypto');
-const cc = require('five-bells-condition');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -116,10 +112,10 @@ app.post("/api/escrows", async (req, res) => {
     }
 
     // Generate escrow condition
-    const { condition, fulfillment } = generateEscrowCondition(
-      farmer_id,
-      practice_type
-    );
+    // const { condition, fulfillment } = generateEscrowCondition(
+    //   farmer_id,
+    //   practice_type
+    // );
 
     // Calculate deadline (in seconds since Ripple epoch)
     const rippleEpoch = 946684800; // Jan 1, 2000 00:00:00 UTC
@@ -128,8 +124,16 @@ app.post("/api/escrows", async (req, res) => {
       deadline_days * 24 * 60 * 60 -
       rippleEpoch;
 
+    const preimageData = crypto.randomBytes(32);
+    const fulfillment = new cc.PreimageSha256();
+    fulfillment.setPreimage(preimageData);
+
     // Create XRPL EscrowCreate transaction
     const currentLedger = await client.getLedgerIndex()
+    const es_condition = fulfillment.getConditionBinary().toString('hex').toUpperCase();
+    const fulfillmentHex = fulfillment.serializeBinary().toString('hex').toUpperCase();
+
+    // Set FinishAfter to 5 minutes from now
     const finishAfter = new Date();
     finishAfter.setMinutes(finishAfter.getMinutes() + 5);
     const finishAfterRippleTime = Math.floor(finishAfter.getTime() / 1000) + xrpl.EPOCH_OFFSET;
@@ -138,9 +142,9 @@ app.post("/api/escrows", async (req, res) => {
       Account: process.env.NGO_WALLET_ADDRESS,
       Destination: farmer.xrp_address,
       Amount: xrpl.xrpToDrops("1000000"),
-      // CancelAfter: deadlineTimestamp,
-      Condition: condition,
-      FinishAfter: finishAfterRippleTime, // Allow 7 days for verification
+      CancelAfter: deadlineTimestamp,
+      Condition: es_condition,
+      FinishAfter: deadlineTimestamp, // Allow 7 days for verification
       // Flags: 2147483648,
       // LastLedgerSequence: currentLedger + 40,
       
