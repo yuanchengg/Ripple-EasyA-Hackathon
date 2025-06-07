@@ -1,60 +1,245 @@
 /* Make the root fill the viewport */
 .home-container {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 /* Sidebar styling */
 .sidebar {
-  width: 240px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  padding: 1.5rem;
-  box-sizing: border-box;
+  width: 220px;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 1rem;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .logo-link {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  margin-bottom: 2rem;
   font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
   text-align: center;
 }
 
-.sidebar .logo a:hover {
-  font-weight: bold;
-  color: #1abc9c;
+.logo-link a {
+  color: white;
+  text-decoration: none;
 }
 
 .nav-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .nav-list li {
-  margin: 1rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .nav-list a {
-  color: inherit;
-  text-decoration: none;
-  font-size: 1rem;
   display: block;
-  padding: 0.5rem 0;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
-.nav-list a.active,
 .nav-list a:hover {
-  font-weight: bold;
-  color: #1abc9c;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-list a.active {
+  background-color: #4CAF50;
+  color: white;
 }
 
 /* Main content area */
 .main-content {
   flex: 1;
-  background: #f5f6fa;
-  padding: 2rem;
+  margin-left: 220px;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.content-wrapper {
+  padding: 1.5rem 2.5rem 1.5rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Dashboard specific styles */
+.dashboard-container {
+  padding: 0;
+}
+
+/* Farmers page specific styles */
+.farmers-page {
+  padding: 0;
+}
+
+.farmers-header {
+  margin-bottom: 1.5rem;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #111827;
+}
+
+.modal-content form {
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111827;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+.form-group input:hover,
+.form-group select:hover {
+  border-color: #9ca3af;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #2563eb;
+}
+
+.submit-button:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
 }

@@ -5,8 +5,8 @@ import "./App.css";
 
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import FarmerList from "./components/FarmerList";
-import FarmerDetail from "./pages/FarmerDetail";
+import Farmers from "./pages/Farmers";
+import FarmerDetail from "./components/FarmerDetail";
 import CreateFarmer from "./components/CreateFarmer";
 import EscrowList from "./components/EscrowList";
 import CreateEscrow from "./components/CreateEscrow";
@@ -20,7 +20,7 @@ function App() {
           <Route index element={<Dashboard />} />
 
           {/* list page */}
-          <Route path="farmers" element={<FarmerList />} />
+          <Route path="farmers" element={<Farmers />} />
 
           {/* detail page - grabs :id from the URL */}
           <Route path="farmers/:id" element={<FarmerDetail />} />

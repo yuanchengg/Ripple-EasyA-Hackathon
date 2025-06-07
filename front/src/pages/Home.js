@@ -8,8 +8,9 @@ export default function Home() {
     <div className="home-container">
       <Sidebar />
       <main className="main-content">
-        {/* Renders Dashboard, FarmerList, FarmerDetail, etc. */}
-        <Outlet />
+        <div className="content-wrapper">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

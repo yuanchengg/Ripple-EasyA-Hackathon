@@ -1,0 +1,594 @@
+/* FarmerDetail.css */
+
+/* Container */
+.farmer-detail {
+  padding: 2rem;
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+/* Header Section */
+.farmer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.farmer-info h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.farmer-location,
+.farmer-id {
+  margin: 0.25rem 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.farmer-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.back-btn,
+.contact-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.back-btn {
+  background-color: transparent;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.contact-btn {
+  background-color: #10b981;
+  color: #fff;
+  border: none;
+}
+
+/* Loading & Error */
+.loading,
+.error {
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.loading {
+  color: #6b7280;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.tab.active {
+  border-bottom: 2px solid #10b981;
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* Details Grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.detail-card {
+  background-color: #fff;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.detail-item span {
+  color: #111827;
+}
+
+.xrp-address-full {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+/* Escrows Tab Content */
+.escrows-content .escrows-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.escrows-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.escrows-header h2 {
+  margin: 0;
+}
+
+.create-escrow-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-escrow-btn:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.escrows-table-container {
+  overflow-x: auto;
+}
+
+.escrows-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.escrows-table th,
+.escrows-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.view-escrow-btn {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.no-escrows {
+  background-color: #fff;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 0.375rem;
+}
+
+.create-first-escrow-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #10b981;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0.375rem;
+}
+
+/* Add Farmer Button */
+.add-farmer-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+  transition: background-color 0.3s;
+}
+
+.add-farmer-btn:hover {
+  background-color: #45a049;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #000;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.modal-cancel {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-cancel:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modal-submit {
+  padding: 0.75rem 1.5rem;
+  background: #000;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-submit:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.farmer-detail-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.farmer-detail-header {
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  background: #000;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.farmer-detail-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.farmer-info-section {
+  display: grid;
+  gap: 2rem;
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h2 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.info-item span {
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.xrp-address {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.stat-value {
+  color: #333;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.escrows-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.escrows-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.escrows-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.escrow-item {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.escrow-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.escrow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.escrow-id {
+  font-weight: 500;
+  color: #333;
+}
+
+.escrow-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.escrow-status.active {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.escrow-status.completed {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.escrow-status.pending {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.escrow-details {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.escrow-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.escrow-amount {
+  font-weight: 500;
+  color: #333;
+}
+
+.escrow-date {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.escrow-description {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.no-escrows {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background: #f8d7da;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.escrow-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+}
+
+.escrow-tab {
+  flex: 1;
+  padding: 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.escrow-tab:hover {
+  color: #333;
+}
+
+.escrow-tab.active {
+  color: #000;
+  border-bottom-color: #000;
+}

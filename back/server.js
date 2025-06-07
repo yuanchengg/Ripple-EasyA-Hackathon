@@ -61,6 +61,43 @@ app.get("/api/farmers", async (req, res) => {
   }
 });
 
+// Get single farmer by ID
+app.get("/api/farmers/:id", async (req, res) => {
+  try {
+    console.log('Backend: Fetching farmer with ID:', req.params.id);
+    const farmer = await db("farmers").where("id", req.params.id).first();
+    console.log('Backend: Farmer query result:', farmer);
+    
+    if (!farmer) {
+      console.log('Backend: Farmer not found');
+      return res.status(404).json({ error: "Farmer not found" });
+    }
+    
+    console.log('Backend: Sending farmer response');
+    res.json(farmer);
+  } catch (error) {
+    console.error("Backend: Error fetching farmer:", error);
+    res.status(500).json({ error: "Failed to fetch farmer" });
+  }
+});
+
+// Get farmer's escrows
+app.get("/api/farmers/:id/escrows", async (req, res) => {
+  try {
+    console.log('Backend: Fetching escrows for farmer ID:', req.params.id);
+    const escrows = await db("escrows")
+      .where("farmer_id", req.params.id)
+      .select("*");
+    console.log('Backend: Escrows query result:', escrows);
+    
+    console.log('Backend: Sending escrows response');
+    res.json(escrows);
+  } catch (error) {
+    console.error("Backend: Error fetching farmer escrows:", error);
+    res.status(500).json({ error: "Failed to fetch farmer escrows" });
+  }
+});
+
 // Register new farmer
 app.post("/api/farmers", async (req, res) => {
   try {
