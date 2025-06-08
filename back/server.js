@@ -184,7 +184,17 @@ app.post("/api/escrows", async (req, res) => {
 
     // Calculate proper deadline date for database
     const deadlineDate = new Date();
-    deadlineDate.setDate(deadlineDate.getDate() + deadline_days);
+    const daysToAdd = parseInt(deadline_days) || 0; // Ensure we have a valid number
+    if (daysToAdd > 0) {
+      deadlineDate.setDate(deadlineDate.getDate() + daysToAdd);
+    }
+    
+    // Ensure we have a valid date before formatting
+    if (isNaN(deadlineDate.getTime())) {
+      throw new Error('Invalid deadline date calculated');
+    }
+    
+    const formattedDeadline = deadlineDate.toISOString().slice(0, 19).replace('T', ' ');
 
     const escrowCreate = {
       TransactionType: "EscrowCreate",
@@ -230,7 +240,7 @@ app.post("/api/escrows", async (req, res) => {
       condition_hash: es_condition,
       fulfillment_data: fulfillment,
       xrpl_sequence: result.result.tx_json.Sequence,
-      deadline: deadlineDate,
+      deadline: formattedDeadline,
       created_at: new Date(),
       updated_at: new Date(),
     });
