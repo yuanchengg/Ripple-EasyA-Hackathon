@@ -100,8 +100,11 @@ const FarmerDetail = () => {
         throw new Error("Farmer's XRP address is not set");
       }
 
-      // Validate XRP address format
-      if (!farmer.xrp_address.startsWith('r') || farmer.xrp_address.length !== 25) {
+      console.log('Validating XRP address:', farmer.xrp_address);
+      
+      // More lenient validation - just check if it starts with 'r'
+      if (!farmer.xrp_address.startsWith('r')) {
+        console.error('Invalid XRP address format:', farmer.xrp_address);
         throw new Error("Invalid XRP address format");
       }
 
@@ -154,7 +157,7 @@ const FarmerDetail = () => {
       if (error.message === "Farmer's XRP address is not set") {
         errorMessage += "Please ensure the farmer has a valid XRP address.";
       } else if (error.message === "Invalid XRP address format") {
-        errorMessage += "The farmer's XRP address is not in the correct format.";
+        errorMessage += `The farmer's XRP address (${farmer.xrp_address}) is not in the correct format.`;
       } else if (error.message.includes("Missing field 'account'")) {
         errorMessage += "Invalid XRP address configuration.";
       } else {
