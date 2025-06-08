@@ -31,11 +31,17 @@ let client;
 // Initialize XRPL Client
 async function initializeXRPL() {
   try {
-    client = new xrpl.Client(TESTNET_URL);
+    client = new xrpl.Client(TESTNET_URL, {
+      connectionTimeout: 30000, // Increase timeout to 30 seconds
+      maxRetries: 3 // Add retry attempts
+    });
     await client.connect();
     console.log("Connected to XRPL Testnet");
   } catch (error) {
     console.error("Failed to connect to XRPL:", error);
+    // Retry connection after 5 seconds
+    console.log("Retrying connection in 5 seconds...");
+    setTimeout(initializeXRPL, 5000);
   }
 }
 
@@ -175,12 +181,17 @@ app.post("/api/escrows", async (req, res) => {
     finishAfter.setMinutes(finishAfter.getMinutes() + 5);
     const RIPPLE_EPOCH_OFFSET = 946684800;
     const finishAfterRippleTime = Math.floor(finishAfter.getTime() / 1000) - RIPPLE_EPOCH_OFFSET;
+
+    // Calculate proper deadline date for database
+    const deadlineDate = new Date();
+    deadlineDate.setDate(deadlineDate.getDate() + deadline_days);
+
     const escrowCreate = {
       TransactionType: "EscrowCreate",
       Account: process.env.NGO_WALLET_ADDRESS,
       Destination: farmer.xrp_address,
       Amount: xrpl.xrpToDrops(amount.toString()),
-      CancelAfter: deadlineTimestamp,
+      //CancelAfter: deadlineTimestamp,
       Condition: es_condition,
       FinishAfter: finishAfterRippleTime, // Allow 7 days for verification
       // Flags: 2147483648,
@@ -219,7 +230,7 @@ app.post("/api/escrows", async (req, res) => {
       condition_hash: es_condition,
       fulfillment_data: fulfillment,
       xrpl_sequence: result.result.tx_json.Sequence,
-      deadline: new Date(Date.now() + deadline_days * 24 * 60 * 60 * 1000),
+      deadline: deadlineDate,
       created_at: new Date(),
       updated_at: new Date(),
     });
