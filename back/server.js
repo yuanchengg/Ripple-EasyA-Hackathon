@@ -92,8 +92,13 @@ app.get("/api/farmers/:id/escrows", async (req, res) => {
   try {
     console.log('Backend: Fetching escrows for farmer ID:', req.params.id);
     const escrows = await db("escrows")
-      .where("farmer_id", req.params.id)
-      .select("*");
+      .join("farmers", "escrows.farmer_id", "farmers.id")
+      .where("escrows.farmer_id", req.params.id)
+      .select(
+        "escrows.*",
+        "farmers.name as farmer_name",
+        "farmers.location as farmer_location"
+      );
     console.log('Backend: Escrows query result:', escrows);
     
     console.log('Backend: Sending escrows response');
@@ -279,7 +284,7 @@ app.post("/api/escrows/:id/verify", async (req, res) => {
       Owner: process.env.NGO_WALLET_ADDRESS,
       OfferSequence: escrow.xrpl_sequence,
       Condition: escrow.condition_hash,
-      Fulfillment: escrow.fulfillment_data,
+      Fulfillment: escrow.fulfillment_data.toString('hex').toUpperCase(), // Convert to hex string
     };
 
     // Submit and wait for validation

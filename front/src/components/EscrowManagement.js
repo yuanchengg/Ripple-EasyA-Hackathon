@@ -44,6 +44,7 @@ export default function EscrowManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [selectedEscrow, setSelectedEscrow] = useState(null);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     farmer_id: "",
     amount: "",
@@ -51,6 +52,10 @@ export default function EscrowManagement() {
     deadline_days: "30",
   });
   const [verifyData, setVerifyData] = useState({
+    verification_data: "",
+    satellite_image_url: "",
+  });
+  const [approveData, setApproveData] = useState({
     verification_data: "",
     satellite_image_url: "",
   });
@@ -87,6 +92,11 @@ export default function EscrowManagement() {
     setVerifyData((p) => ({ ...p, [name]: value }));
   };
 
+  const handleApproveInputChange = (e) => {
+    const { name, value } = e.target;
+    setApproveData((p) => ({ ...p, [name]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -118,6 +128,22 @@ export default function EscrowManagement() {
       setSelectedEscrow(null);
     } catch {
       setError("Failed to verify practice");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleApprove = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.post(`/escrows/${selectedEscrow.id}/verify`, approveData);
+      fetchData();
+      setApproveDialogOpen(false);
+      setApproveData({ verification_data: "", satellite_image_url: "" });
+      setSelectedEscrow(null);
+    } catch {
+      setError("Failed to approve and release escrow");
     } finally {
       setSubmitting(false);
     }
@@ -209,32 +235,35 @@ export default function EscrowManagement() {
                 </TableCell>
                 <TableCell>{formatDate(esc.deadline)}</TableCell>
                 <TableCell>
-                  {esc.status === "pending" &&
-                    new Date(esc.deadline) <= new Date() && (
+                  {esc.status === "pending" && (
+                    <Box display="flex" gap={1}>
                       <Button
                         size="small"
-                        variant="outlined"
-                        startIcon={<Cancel />}
-                        onClick={() => handleCancel(esc)}
-                        disabled={submitting}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  {esc.status === "pending" &&
-                    new Date(esc.deadline) > new Date() && (
-                      <Button
-                        size="small"
-                        variant="outlined"
+                        variant="contained"
+                        color="success"
                         startIcon={<CheckCircle />}
                         onClick={() => {
                           setSelectedEscrow(esc);
-                          setVerifyDialogOpen(true);
+                          setApproveDialogOpen(true);
                         }}
+                        disabled={submitting}
                       >
-                        Verify
+                        Approve & Release
                       </Button>
-                    )}
+                      {new Date(esc.deadline) <= new Date() && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          startIcon={<Cancel />}
+                          onClick={() => handleCancel(esc)}
+                          disabled={submitting}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </Box>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -320,15 +349,15 @@ export default function EscrowManagement() {
         </form>
       </Dialog>
 
-      {/* Verify Practice Dialog */}
+      {/* Approve & Release Dialog */}
       <Dialog
-        open={verifyDialogOpen}
-        onClose={() => setVerifyDialogOpen(false)}
+        open={approveDialogOpen}
+        onClose={() => setApproveDialogOpen(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Verify Practice</DialogTitle>
-        <form onSubmit={handleVerify}>
+        <DialogTitle>Approve & Release Escrow</DialogTitle>
+        <form onSubmit={handleApprove}>
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -338,9 +367,10 @@ export default function EscrowManagement() {
                   name="verification_data"
                   multiline
                   rows={4}
-                  value={verifyData.verification_data}
-                  onChange={handleVerifyInputChange}
+                  value={approveData.verification_data}
+                  onChange={handleApproveInputChange}
                   required
+                  helperText="Enter details about the practice verification"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -348,16 +378,17 @@ export default function EscrowManagement() {
                   fullWidth
                   label="Satellite Image URL"
                   name="satellite_image_url"
-                  value={verifyData.satellite_image_url}
-                  onChange={handleVerifyInputChange}
+                  value={approveData.satellite_image_url}
+                  onChange={handleApproveInputChange}
+                  helperText="Optional: URL to satellite imagery or other verification media"
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setVerifyDialogOpen(false)}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={submitting}>
-              Release
+            <Button onClick={() => setApproveDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained" color="success" disabled={submitting}>
+              {submitting ? "Processing..." : "Approve & Release"}
             </Button>
           </DialogActions>
         </form>

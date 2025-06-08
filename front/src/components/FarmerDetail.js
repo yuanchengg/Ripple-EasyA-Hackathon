@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getFarmer, getFarmerEscrows, createEscrow } from "../services/api";
+import { getFarmer, getFarmerEscrows, createEscrow, verifyEscrow } from "../services/api";
 import "./FarmerDetail.css";
 
 // Helper function to convert ISO time to Ripple time
@@ -23,6 +23,12 @@ const FarmerDetail = () => {
     description: "",
     practice_type: "",
     deadline_days: "30" // Default to 30 days
+  });
+  const [approvingEscrow, setApprovingEscrow] = useState(null);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [approveData, setApproveData] = useState({
+    verification_data: "",
+    satellite_image_url: "",
   });
 
   // Sustainable agriculture practices
@@ -167,6 +173,27 @@ const FarmerDetail = () => {
     }
   };
 
+  const handleApproveInputChange = (e) => {
+    const { name, value } = e.target;
+    setApproveData((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleApprove = async (e) => {
+    e.preventDefault();
+    try {
+      await verifyEscrow(approvingEscrow.id, approveData);
+      // Refresh escrows after approval
+      const escrowsResponse = await getFarmerEscrows(id);
+      setEscrows(escrowsResponse.data);
+      setApproveDialogOpen(false);
+      setApproveData({ verification_data: "", satellite_image_url: "" });
+      setApprovingEscrow(null);
+    } catch (error) {
+      console.error('Error approving escrow:', error);
+      alert('Failed to approve escrow. Please try again.');
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -179,8 +206,8 @@ const FarmerDetail = () => {
     return <div className="error">Farmer not found</div>;
   }
 
-  const activeEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "active") : [];
-  const completedEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "completed") : [];
+  const activeEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "pending") : [];
+  const completedEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "released" || e.status === "verified") : [];
   const displayedEscrows = activeTab === "active" ? activeEscrows : completedEscrows;
 
   return (
@@ -228,13 +255,13 @@ const FarmerDetail = () => {
               className={`escrow-tab ${activeTab === 'active' ? 'active' : ''}`}
               onClick={() => setActiveTab('active')}
             >
-              Active Escrows
+              Active Escrows ({activeEscrows.length})
             </button>
             <button 
               className={`escrow-tab ${activeTab === 'completed' ? 'active' : ''}`}
               onClick={() => setActiveTab('completed')}
             >
-              Completed Escrows
+              Completed Escrows ({completedEscrows.length})
             </button>
           </div>
           {displayedEscrows.length > 0 ? (
@@ -242,27 +269,81 @@ const FarmerDetail = () => {
               {displayedEscrows.map((escrow) => (
                 <div key={escrow.id} className="escrow-item">
                   <div className="escrow-header">
-                    <span className="escrow-id">Escrow #{escrow.id}</span>
-                    <span className={`escrow-status ${escrow.status}`}>
-                      {escrow.status}
-                    </span>
+                    <div className="escrow-title">
+                      <span className="escrow-id">Escrow #{escrow.id}</span>
+                      <span className={`escrow-status ${escrow.status}`}>
+                        {escrow.status}
+                      </span>
+                    </div>
+                    <div className="escrow-actions">
+                      {escrow.status === "pending" && (
+                        <button
+                          className="approve-button"
+                          onClick={() => {
+                            setApprovingEscrow(escrow);
+                            setApproveDialogOpen(true);
+                          }}
+                        >
+                          Approve & Release
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="escrow-details">
                     <div className="escrow-info">
-                      <span className="escrow-amount">{escrow.amount} XRP</span>
-                      <span className="escrow-date">
-                        {new Date(escrow.created_at).toLocaleDateString()}
-                      </span>
+                      <div className="escrow-amount">
+                        <span className="label">Amount:</span>
+                        <span className="value">{parseFloat(escrow.amount).toFixed(2)} XRP</span>
+                      </div>
+                      <div className="escrow-practice">
+                        <span className="label">Practice:</span>
+                        <span className="value">{escrow.practice_type}</span>
+                      </div>
+                      <div className="escrow-dates">
+                        <div className="date-item">
+                          <span className="label">Created:</span>
+                          <span className="value">{new Date(escrow.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="date-item">
+                          <span className="label">Deadline:</span>
+                          <span className="value">{new Date(escrow.deadline).toLocaleDateString()}</span>
+                        </div>
+                        {escrow.verified_at && (
+                          <div className="date-item">
+                            <span className="label">Verified:</span>
+                            <span className="value">{new Date(escrow.verified_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {escrow.released_at && (
+                          <div className="date-item">
+                            <span className="label">Released:</span>
+                            <span className="value">{new Date(escrow.released_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="escrow-description">
-                      {escrow.description || "No description provided"}
-                    </div>
+                    {escrow.verification_data && (
+                      <div className="escrow-verification">
+                        <span className="label">Verification:</span>
+                        <span className="value">{escrow.verification_data}</span>
+                      </div>
+                    )}
+                    {escrow.satellite_image_url && (
+                      <div className="escrow-image">
+                        <span className="label">Satellite Image:</span>
+                        <a href={escrow.satellite_image_url} target="_blank" rel="noopener noreferrer">
+                          View Image
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="no-escrows">No {activeTab} escrows found for this farmer</div>
+            <div className="no-escrows">
+              <p>No {activeTab} escrows found for this farmer.</p>
+            </div>
           )}
         </div>
       </div>
@@ -338,6 +419,48 @@ const FarmerDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Approve & Release Dialog */}
+      <div className={`modal ${approveDialogOpen ? 'show' : ''}`}>
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Approve & Release Escrow</h3>
+            <button className="close-button" onClick={() => setApproveDialogOpen(false)}>×</button>
+          </div>
+          <form onSubmit={handleApprove}>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Verification Data</label>
+                <textarea
+                  name="verification_data"
+                  value={approveData.verification_data}
+                  onChange={handleApproveInputChange}
+                  required
+                  placeholder="Enter verification details..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Satellite Image URL (Optional)</label>
+                <input
+                  type="url"
+                  name="satellite_image_url"
+                  value={approveData.satellite_image_url}
+                  onChange={handleApproveInputChange}
+                  placeholder="Enter satellite image URL..."
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="cancel-button" onClick={() => setApproveDialogOpen(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="submit-button">
+                Approve & Release
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
