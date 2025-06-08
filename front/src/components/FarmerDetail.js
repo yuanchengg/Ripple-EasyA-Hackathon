@@ -173,24 +173,22 @@ const FarmerDetail = () => {
     }
   };
 
-  const handleApproveInputChange = (e) => {
-    const { name, value } = e.target;
-    setApproveData((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleApprove = async (e) => {
-    e.preventDefault();
+  const handleApprove = async (escrow) => {
     try {
-      await verifyEscrow(approvingEscrow.id, approveData);
-      // Refresh escrows after approval
-      const escrowsResponse = await getFarmerEscrows(id);
-      setEscrows(escrowsResponse.data);
-      setApproveDialogOpen(false);
-      setApproveData({ verification_data: "", satellite_image_url: "" });
-      setApprovingEscrow(null);
+      // Update the escrow status in the local state
+      setEscrows(prevEscrows => 
+        prevEscrows.map(e => 
+          e.id === escrow.id 
+            ? { ...e, status: "approved and released" }
+            : e
+        )
+      );
+      
+      // Switch to completed tab
+      setActiveTab("completed");
     } catch (error) {
-      console.error('Error approving escrow:', error);
-      alert('Failed to approve escrow. Please try again.');
+      console.error('Error updating escrow status:', error);
+      alert('Failed to update escrow status. Please try again.');
     }
   };
 
@@ -207,7 +205,7 @@ const FarmerDetail = () => {
   }
 
   const activeEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "pending") : [];
-  const completedEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "released" || e.status === "verified") : [];
+  const completedEscrows = Array.isArray(escrows) ? escrows.filter(e => e.status === "released" || e.status === "verified" || e.status === "approved and released") : [];
   const displayedEscrows = activeTab === "active" ? activeEscrows : completedEscrows;
 
   return (
@@ -279,10 +277,7 @@ const FarmerDetail = () => {
                       {escrow.status === "pending" && (
                         <button
                           className="approve-button"
-                          onClick={() => {
-                            setApprovingEscrow(escrow);
-                            setApproveDialogOpen(true);
-                          }}
+                          onClick={() => handleApprove(escrow)}
                         >
                           Approve & Release
                         </button>
@@ -419,48 +414,6 @@ const FarmerDetail = () => {
           </div>
         </div>
       )}
-
-      {/* Approve & Release Dialog */}
-      <div className={`modal ${approveDialogOpen ? 'show' : ''}`}>
-        <div className="modal-content">
-          <div className="modal-header">
-            <h3>Approve & Release Escrow</h3>
-            <button className="close-button" onClick={() => setApproveDialogOpen(false)}>×</button>
-          </div>
-          <form onSubmit={handleApprove}>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Verification Data</label>
-                <textarea
-                  name="verification_data"
-                  value={approveData.verification_data}
-                  onChange={handleApproveInputChange}
-                  required
-                  placeholder="Enter verification details..."
-                />
-              </div>
-              <div className="form-group">
-                <label>Satellite Image URL (Optional)</label>
-                <input
-                  type="url"
-                  name="satellite_image_url"
-                  value={approveData.satellite_image_url}
-                  onChange={handleApproveInputChange}
-                  placeholder="Enter satellite image URL..."
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="cancel-button" onClick={() => setApproveDialogOpen(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="submit-button">
-                Approve & Release
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
   );
 };
